@@ -1,0 +1,2333 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/AyatKhaled2004/Fraud-Detection/blob/main/ML%20with%20NLP%20use%20case\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "id": "6baee73a-88a6-4711-aa76-93c5bc4ca122",
+      "metadata": {
+        "id": "6baee73a-88a6-4711-aa76-93c5bc4ca122"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "%matplotlib inline\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "id": "f3424c6c-ac99-479a-afaa-fa35de1e80a8",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 423
+        },
+        "id": "f3424c6c-ac99-479a-afaa-fa35de1e80a8",
+        "outputId": "bf53aa8a-7b36-440a-9fcd-3de129d98f36"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "                                                Review  Liked\n",
+              "0                             Wow... Loved this place.      1\n",
+              "1                                   Crust is not good.      0\n",
+              "2            Not tasty and the texture was just nasty.      0\n",
+              "3    Stopped by during the late May bank holiday of...      1\n",
+              "4    The selection on the menu was great and so wer...      1\n",
+              "..                                                 ...    ...\n",
+              "995  I think food should have flavor and texture an...      0\n",
+              "996                           Appetite instantly gone.      0\n",
+              "997  Overall I was not impressed and would not go b...      0\n",
+              "998  The whole experience was underwhelming, and I ...      0\n",
+              "999  Then, as if I hadn't wasted enough of my life ...      0\n",
+              "\n",
+              "[1000 rows x 2 columns]"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-e25fcd0c-a967-42af-9da3-64c3bd54f81e\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Review</th>\n",
+              "      <th>Liked</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Wow... Loved this place.</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Crust is not good.</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Not tasty and the texture was just nasty.</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Stopped by during the late May bank holiday of...</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>The selection on the menu was great and so wer...</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>995</th>\n",
+              "      <td>I think food should have flavor and texture an...</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>996</th>\n",
+              "      <td>Appetite instantly gone.</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>997</th>\n",
+              "      <td>Overall I was not impressed and would not go b...</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>998</th>\n",
+              "      <td>The whole experience was underwhelming, and I ...</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>999</th>\n",
+              "      <td>Then, as if I hadn't wasted enough of my life ...</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>1000 rows × 2 columns</p>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-e25fcd0c-a967-42af-9da3-64c3bd54f81e')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-e25fcd0c-a967-42af-9da3-64c3bd54f81e button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-e25fcd0c-a967-42af-9da3-64c3bd54f81e');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "  <div id=\"id_9829e8ef-11cb-47a9-9705-6cb9e1472efe\">\n",
+              "    <style>\n",
+              "      .colab-df-generate {\n",
+              "        background-color: #E8F0FE;\n",
+              "        border: none;\n",
+              "        border-radius: 50%;\n",
+              "        cursor: pointer;\n",
+              "        display: none;\n",
+              "        fill: #1967D2;\n",
+              "        height: 32px;\n",
+              "        padding: 0 0 0 0;\n",
+              "        width: 32px;\n",
+              "      }\n",
+              "\n",
+              "      .colab-df-generate:hover {\n",
+              "        background-color: #E2EBFA;\n",
+              "        box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "        fill: #174EA6;\n",
+              "      }\n",
+              "\n",
+              "      [theme=dark] .colab-df-generate {\n",
+              "        background-color: #3B4455;\n",
+              "        fill: #D2E3FC;\n",
+              "      }\n",
+              "\n",
+              "      [theme=dark] .colab-df-generate:hover {\n",
+              "        background-color: #434B5C;\n",
+              "        box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "        filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "        fill: #FFFFFF;\n",
+              "      }\n",
+              "    </style>\n",
+              "    <button class=\"colab-df-generate\" onclick=\"generateWithVariable('data')\"\n",
+              "            title=\"Generate code using this dataframe.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M7,19H8.4L18.45,9,17,7.55,7,17.6ZM5,21V16.75L18.45,3.32a2,2,0,0,1,2.83,0l1.4,1.43a1.91,1.91,0,0,1,.58,1.4,1.91,1.91,0,0,1-.58,1.4L9.25,21ZM18.45,9,17,7.55Zm-12,3A5.31,5.31,0,0,0,4.9,8.1,5.31,5.31,0,0,0,1,6.5,5.31,5.31,0,0,0,4.9,4.9,5.31,5.31,0,0,0,6.5,1,5.31,5.31,0,0,0,8.1,4.9,5.31,5.31,0,0,0,12,6.5,5.46,5.46,0,0,0,6.5,12Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "    <script>\n",
+              "      (() => {\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#id_9829e8ef-11cb-47a9-9705-6cb9e1472efe button.colab-df-generate');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      buttonEl.onclick = () => {\n",
+              "        google.colab.notebook.generateWithVariable('data');\n",
+              "      }\n",
+              "      })();\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "data",
+              "summary": "{\n  \"name\": \"data\",\n  \"rows\": 1000,\n  \"fields\": [\n    {\n      \"column\": \"Review\",\n      \"properties\": {\n        \"dtype\": \"string\",\n        \"num_unique_values\": 996,\n        \"samples\": [\n          \"They were excellent.\",\n          \"Your servers suck, wait, correction, our server Heimer sucked.\",\n          \"Will be back again!\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Liked\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0,\n        \"min\": 0,\n        \"max\": 1,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          0,\n          1\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {},
+          "execution_count": 3
+        }
+      ],
+      "source": [
+        "data=pd.read_csv(r\"/content/Restaurant_Reviews.tsv\",sep='\\t')\n",
+        "data"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "id": "ffa023bc-c3e1-4839-bd30-bf0694ed550b",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ffa023bc-c3e1-4839-bd30-bf0694ed550b",
+        "outputId": "8da6a331-bc73-42c6-b793-3a30590e0c6d"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "<class 'pandas.core.frame.DataFrame'>\n",
+            "RangeIndex: 1000 entries, 0 to 999\n",
+            "Data columns (total 2 columns):\n",
+            " #   Column  Non-Null Count  Dtype \n",
+            "---  ------  --------------  ----- \n",
+            " 0   Review  1000 non-null   object\n",
+            " 1   Liked   1000 non-null   int64 \n",
+            "dtypes: int64(1), object(1)\n",
+            "memory usage: 15.8+ KB\n"
+          ]
+        }
+      ],
+      "source": [
+        "data.info()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 5,
+      "id": "0eb25083-f17b-4719-8e31-0f66d769faf1",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 178
+        },
+        "id": "0eb25083-f17b-4719-8e31-0f66d769faf1",
+        "outputId": "5083f4d5-fec6-496b-c097-f0e6a1f6241b"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Liked\n",
+              "1    500\n",
+              "0    500\n",
+              "Name: count, dtype: int64"
+            ],
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>count</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Liked</th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>500</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>500</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div><br><label><b>dtype:</b> int64</label>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 5
+        }
+      ],
+      "source": [
+        "data['Liked'].value_counts()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "id": "c22b1647-4230-4714-b19e-a671f6a2be7f",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 449
+        },
+        "id": "c22b1647-4230-4714-b19e-a671f6a2be7f",
+        "outputId": "056ce627-b678-4492-f106-93b7d6a3d43e"
+      },
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 640x480 with 1 Axes>"
+            ],
+            "image/png": "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2muvadSoURo3bpyefvppKw8FQIhwZgeAUSZPnqwhQ4bovffeU2xsbGD9k08+0c6dO/XUU08F1jo6OtTa2qpvv/1Wn376qVJTU5WSkhLY7na7e3V2AD2D2AFglIkTJ+r1119XTU2NsrOzA+unT5/WggULNGnSpHMeExMT05sjAuhlxA4AoxQVFenaa6/Vz3/+c7399tv62c9+Jkm67rrrdOTIEV1xxRXnfdzw4cNVX1+vEydOaPDgwZKk3bt399rcAHoOsQMg7DU3N5/zywITExMvuP+MGTPU0dGhO+64Q++8845uvPFGzZs3T3fccYfS0tJ0zz33KCIiQp988okOHDigJ598Ujk5ObrqqqtUUFCgJUuWyOv16g9/+EMPHxmA3kDsAAh727dv109+8pOgtcLCwu98zMyZM9XZ2amJEydqy5Ytys3NVUVFhRYuXKhnn31W/fr1U3p6un75y19KkiIiIrRhwwYVFhbqhhtu0GWXXably5fr9ttv77HjAtA7bH6/32/1EAAAAD2Fr54DAACjETsAAMBoxA4AADAasQMAAIxG7AAAAKMROwAAwGjEDgAAMBqxAwAAjEbsAAAAoxE7AADAaMQOAAAw2v8D/DEfC/EHL3EAAAAASUVORK5CYII=\n"
+          },
+          "metadata": {}
+        }
+      ],
+      "source": [
+        "sns.countplot(x=data['Liked'])\n",
+        "\n",
+        "plt.show()\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 7,
+      "id": "61de4462-8f93-45f2-bb94-5c07f1a597b7",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "61de4462-8f93-45f2-bb94-5c07f1a597b7",
+        "outputId": "2e650443-54f9-40e1-8b73-a7abbf75399b"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "149"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 7
+        }
+      ],
+      "source": [
+        "data['Review'].apply(len).max()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "id": "44d467e7-460d-4104-80c2-b61fa6ceff22",
+      "metadata": {
+        "id": "44d467e7-460d-4104-80c2-b61fa6ceff22"
+      },
+      "outputs": [],
+      "source": [
+        "data['review_letter_counts']=data['Review'].apply(len)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 9,
+      "id": "2347f9f6-73d3-4df0-90ed-5fbb301b83d2",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 423
+        },
+        "id": "2347f9f6-73d3-4df0-90ed-5fbb301b83d2",
+        "outputId": "008c29e6-fbae-4e5d-c23c-c7cb3e8cb883"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "                                                Review  Liked  \\\n",
+              "0                             Wow... Loved this place.      1   \n",
+              "1                                   Crust is not good.      0   \n",
+              "2            Not tasty and the texture was just nasty.      0   \n",
+              "3    Stopped by during the late May bank holiday of...      1   \n",
+              "4    The selection on the menu was great and so wer...      1   \n",
+              "..                                                 ...    ...   \n",
+              "995  I think food should have flavor and texture an...      0   \n",
+              "996                           Appetite instantly gone.      0   \n",
+              "997  Overall I was not impressed and would not go b...      0   \n",
+              "998  The whole experience was underwhelming, and I ...      0   \n",
+              "999  Then, as if I hadn't wasted enough of my life ...      0   \n",
+              "\n",
+              "     review_letter_counts  \n",
+              "0                      24  \n",
+              "1                      18  \n",
+              "2                      41  \n",
+              "3                      87  \n",
+              "4                      59  \n",
+              "..                    ...  \n",
+              "995                    66  \n",
+              "996                    24  \n",
+              "997                    50  \n",
+              "998                    91  \n",
+              "999                   134  \n",
+              "\n",
+              "[1000 rows x 3 columns]"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-f2407d1c-dd02-4e48-a534-e518bb063103\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Review</th>\n",
+              "      <th>Liked</th>\n",
+              "      <th>review_letter_counts</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Wow... Loved this place.</td>\n",
+              "      <td>1</td>\n",
+              "      <td>24</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Crust is not good.</td>\n",
+              "      <td>0</td>\n",
+              "      <td>18</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Not tasty and the texture was just nasty.</td>\n",
+              "      <td>0</td>\n",
+              "      <td>41</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Stopped by during the late May bank holiday of...</td>\n",
+              "      <td>1</td>\n",
+              "      <td>87</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>The selection on the menu was great and so wer...</td>\n",
+              "      <td>1</td>\n",
+              "      <td>59</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>995</th>\n",
+              "      <td>I think food should have flavor and texture an...</td>\n",
+              "      <td>0</td>\n",
+              "      <td>66</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>996</th>\n",
+              "      <td>Appetite instantly gone.</td>\n",
+              "      <td>0</td>\n",
+              "      <td>24</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>997</th>\n",
+              "      <td>Overall I was not impressed and would not go b...</td>\n",
+              "      <td>0</td>\n",
+              "      <td>50</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>998</th>\n",
+              "      <td>The whole experience was underwhelming, and I ...</td>\n",
+              "      <td>0</td>\n",
+              "      <td>91</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>999</th>\n",
+              "      <td>Then, as if I hadn't wasted enough of my life ...</td>\n",
+              "      <td>0</td>\n",
+              "      <td>134</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>1000 rows × 3 columns</p>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-f2407d1c-dd02-4e48-a534-e518bb063103')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-f2407d1c-dd02-4e48-a534-e518bb063103 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-f2407d1c-dd02-4e48-a534-e518bb063103');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "  <div id=\"id_c35bb2e2-da2f-4937-965e-fad433fc222d\">\n",
+              "    <style>\n",
+              "      .colab-df-generate {\n",
+              "        background-color: #E8F0FE;\n",
+              "        border: none;\n",
+              "        border-radius: 50%;\n",
+              "        cursor: pointer;\n",
+              "        display: none;\n",
+              "        fill: #1967D2;\n",
+              "        height: 32px;\n",
+              "        padding: 0 0 0 0;\n",
+              "        width: 32px;\n",
+              "      }\n",
+              "\n",
+              "      .colab-df-generate:hover {\n",
+              "        background-color: #E2EBFA;\n",
+              "        box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "        fill: #174EA6;\n",
+              "      }\n",
+              "\n",
+              "      [theme=dark] .colab-df-generate {\n",
+              "        background-color: #3B4455;\n",
+              "        fill: #D2E3FC;\n",
+              "      }\n",
+              "\n",
+              "      [theme=dark] .colab-df-generate:hover {\n",
+              "        background-color: #434B5C;\n",
+              "        box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "        filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "        fill: #FFFFFF;\n",
+              "      }\n",
+              "    </style>\n",
+              "    <button class=\"colab-df-generate\" onclick=\"generateWithVariable('data')\"\n",
+              "            title=\"Generate code using this dataframe.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M7,19H8.4L18.45,9,17,7.55,7,17.6ZM5,21V16.75L18.45,3.32a2,2,0,0,1,2.83,0l1.4,1.43a1.91,1.91,0,0,1,.58,1.4,1.91,1.91,0,0,1-.58,1.4L9.25,21ZM18.45,9,17,7.55Zm-12,3A5.31,5.31,0,0,0,4.9,8.1,5.31,5.31,0,0,0,1,6.5,5.31,5.31,0,0,0,4.9,4.9,5.31,5.31,0,0,0,6.5,1,5.31,5.31,0,0,0,8.1,4.9,5.31,5.31,0,0,0,12,6.5,5.46,5.46,0,0,0,6.5,12Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "    <script>\n",
+              "      (() => {\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#id_c35bb2e2-da2f-4937-965e-fad433fc222d button.colab-df-generate');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      buttonEl.onclick = () => {\n",
+              "        google.colab.notebook.generateWithVariable('data');\n",
+              "      }\n",
+              "      })();\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "data",
+              "summary": "{\n  \"name\": \"data\",\n  \"rows\": 1000,\n  \"fields\": [\n    {\n      \"column\": \"Review\",\n      \"properties\": {\n        \"dtype\": \"string\",\n        \"num_unique_values\": 996,\n        \"samples\": [\n          \"They were excellent.\",\n          \"Your servers suck, wait, correction, our server Heimer sucked.\",\n          \"Will be back again!\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Liked\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0,\n        \"min\": 0,\n        \"max\": 1,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          0,\n          1\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"review_letter_counts\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 32,\n        \"min\": 11,\n        \"max\": 149,\n        \"num_unique_values\": 134,\n        \"samples\": [\n          122,\n          16\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {},
+          "execution_count": 9
+        }
+      ],
+      "source": [
+        "data"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "id": "0023c143-d23e-4f49-ab3a-868382422b49",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 90
+        },
+        "id": "0023c143-d23e-4f49-ab3a-868382422b49",
+        "outputId": "343a0d01-27b5-43f1-c4fe-9f0f288fb1b2"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/tmp/ipykernel_9275/4026052082.py:1: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`\n",
+            "  data.iloc[data['review_letter_counts'].idxmax()][0]\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'The problem I have is that they charge $11.99 for a sandwich that is no bigger than a Subway sub (which offers better and more amount of vegetables).'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 10
+        }
+      ],
+      "source": [
+        "data.iloc[data['review_letter_counts'].idxmax()][0]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 11,
+      "id": "db5c80d6-f408-4b94-90db-839ec6925c5b",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "db5c80d6-f408-4b94-90db-839ec6925c5b",
+        "outputId": "efa50c7c-a49a-4e88-87dd-5aa5750e4951"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/tmp/ipykernel_9275/3104724850.py:1: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`\n",
+            "  data.iloc[data['review_letter_counts'].idxmax()][1]\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "np.int64(0)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 11
+        }
+      ],
+      "source": [
+        "data.iloc[data['review_letter_counts'].idxmax()][1]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 12,
+      "id": "941f9904-9f8b-4ea9-b049-0ded6c9a04c9",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "941f9904-9f8b-4ea9-b049-0ded6c9a04c9",
+        "outputId": "4c9f98ff-5866-416f-9948-b6202f578aa9"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'Wow... Loved this place.'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 12
+        }
+      ],
+      "source": [
+        "\n",
+        "data['Review'][0]\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 13,
+      "id": "94961a75-6199-40ef-b429-0d0cf050d8da",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "94961a75-6199-40ef-b429-0d0cf050d8da",
+        "outputId": "40dc65d1-ead8-414e-f80b-dde463ac90d9"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'!\"#$%&\\'()*+,-./:;<=>?@[\\\\]^_`{|}~'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 13
+        }
+      ],
+      "source": [
+        "import string\n",
+        "string.punctuation"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 14,
+      "id": "47c3d097-c7e5-43a7-b3a2-27a6784a3dc6",
+      "metadata": {
+        "id": "47c3d097-c7e5-43a7-b3a2-27a6784a3dc6"
+      },
+      "outputs": [],
+      "source": [
+        "import nltk\n",
+        "from nltk.corpus import stopwords"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 15,
+      "id": "3c257792-c061-40bc-9bd9-c02a2797b2bf",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "3c257792-c061-40bc-9bd9-c02a2797b2bf",
+        "outputId": "5317bc43-a9ea-4ec2-8689-5533b6de993e"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "[nltk_data] Downloading package stopwords to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping corpora/stopwords.zip.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "True"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 15
+        }
+      ],
+      "source": [
+        "nltk.download('stopwords')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 16,
+      "id": "18e66c07-c44a-4006-bcdf-7596f973f2c6",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "18e66c07-c44a-4006-bcdf-7596f973f2c6",
+        "outputId": "d0df7ca9-f87f-4c54-e6a0-a7780db685e3"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "['a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', \"aren't\", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', \"couldn't\", 'd', 'did', 'didn', \"didn't\", 'do', 'does', 'doesn', \"doesn't\", 'doing', 'don', \"don't\", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', \"hadn't\", 'has', 'hasn', \"hasn't\", 'have', 'haven', \"haven't\", 'having', 'he', \"he'd\", \"he'll\", 'her', 'here', 'hers', 'herself', \"he's\", 'him', 'himself', 'his', 'how', 'i', \"i'd\", 'if', \"i'll\", \"i'm\", 'in', 'into', 'is', 'isn', \"isn't\", 'it', \"it'd\", \"it'll\", \"it's\", 'its', 'itself', \"i've\", 'just', 'll', 'm', 'ma', 'me', 'mightn', \"mightn't\", 'more', 'most', 'mustn', \"mustn't\", 'my', 'myself', 'needn', \"needn't\", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', \"shan't\", 'she', \"she'd\", \"she'll\", \"she's\", 'should', 'shouldn', \"shouldn't\", \"should've\", 'so', 'some', 'such', 't', 'than', 'that', \"that'll\", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', \"they'd\", \"they'll\", \"they're\", \"they've\", 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', \"wasn't\", 'we', \"we'd\", \"we'll\", \"we're\", 'were', 'weren', \"weren't\", \"we've\", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', \"won't\", 'wouldn', \"wouldn't\", 'y', 'you', \"you'd\", \"you'll\", 'your', \"you're\", 'yours', 'yourself', 'yourselves', \"you've\"]\n"
+          ]
+        }
+      ],
+      "source": [
+        "print(stopwords.words('english'))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 17,
+      "id": "c834948b-4adf-4e2b-be4f-dcaf78b5c453",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "c834948b-4adf-4e2b-be4f-dcaf78b5c453",
+        "outputId": "644b510d-274e-4ebc-baf9-2aa42c0ff0fe"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'   ...                 .'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 17
+        }
+      ],
+      "source": [
+        "s=data['Review'][0]\n",
+        "import re\n",
+        "s=re.sub('[\"a-zA-Z\"]',\" \",s)\n",
+        "s\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 18,
+      "id": "be2aacf7-3495-4a07-94a8-44cad2c405dd",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "be2aacf7-3495-4a07-94a8-44cad2c405dd",
+        "outputId": "ff1afb24-97f5-44fc-bba4-ce164f8751fb"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'Wow    Loved this place '"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 18
+        }
+      ],
+      "source": [
+        "s=data['Review'][0]\n",
+        "import re\n",
+        "s=re.sub('[^a-zA-Z]',\" \",s)\n",
+        "s\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 19,
+      "id": "2cacf4f5-7a68-4f4b-b830-a120308834a7",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "2cacf4f5-7a68-4f4b-b830-a120308834a7",
+        "outputId": "4fbc672f-cf80-44de-c199-07e090650004"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'wow    loved this place '"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 19
+        }
+      ],
+      "source": [
+        "s=s.lower()\n",
+        "s"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 20,
+      "id": "47846a3d-1fcd-4240-979d-a324a14725db",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "47846a3d-1fcd-4240-979d-a324a14725db",
+        "outputId": "4ef66ccf-67e0-46f6-c6a1-a26123bc6493"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['wow', 'loved', 'this', 'place']"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 20
+        }
+      ],
+      "source": [
+        "s=s.split()\n",
+        "s"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 21,
+      "id": "45788f28-7b66-412d-a5d0-e698088ae71e",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "45788f28-7b66-412d-a5d0-e698088ae71e",
+        "outputId": "707aa4fe-d7ae-4d0b-b726-fbdc2c913d57"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['wow', 'loved', 'place']"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 21
+        }
+      ],
+      "source": [
+        "temp=[]\n",
+        "for word in s:\n",
+        "    if word not in stopwords.words('english'):\n",
+        "        temp.append(word)\n",
+        "temp"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 22,
+      "id": "dbdd4009-ef4f-4608-91da-024179fa62ec",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "dbdd4009-ef4f-4608-91da-024179fa62ec",
+        "outputId": "5131f38a-1957-46bf-8ff5-5d05d0a90f4b"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'wow loved place'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 22
+        }
+      ],
+      "source": [
+        "s=' '.join(temp)\n",
+        "s"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 23,
+      "id": "3d44ba4f-35c9-4996-8119-9b18c19cdb8c",
+      "metadata": {
+        "id": "3d44ba4f-35c9-4996-8119-9b18c19cdb8c"
+      },
+      "outputs": [],
+      "source": [
+        " from nltk.stem import PorterStemmer"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 24,
+      "id": "b9d88090-7ae3-466e-89cd-c960d755af1a",
+      "metadata": {
+        "scrolled": true,
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "b9d88090-7ae3-466e-89cd-c960d755af1a",
+        "outputId": "fb805103-a398-4573-e76b-f13be62b4248"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'wow loved plac'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 24
+        }
+      ],
+      "source": [
+        "stem=PorterStemmer()\n",
+        "s=stem.stem(s)\n",
+        "s"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 25,
+      "id": "b91665a6-981a-4a6e-bf47-20c5c8a25e8e",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "b91665a6-981a-4a6e-bf47-20c5c8a25e8e",
+        "outputId": "8d189572-6f94-4f0e-e647-b206dab63b01"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[0, 0, 1],\n",
+              "       [1, 0, 0],\n",
+              "       [0, 1, 0]])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 25
+        }
+      ],
+      "source": [
+        "from sklearn.feature_extraction.text import CountVectorizer\n",
+        "cv=CountVectorizer()\n",
+        "cv.fit_transform(s.split()).toarray()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 30,
+      "id": "eeabcecb-77b1-4ae2-a0ef-98f69e76550a",
+      "metadata": {
+        "id": "eeabcecb-77b1-4ae2-a0ef-98f69e76550a"
+      },
+      "outputs": [],
+      "source": [
+        "corpus=[]\n",
+        "for i in range(len(data)):\n",
+        "    s=re.sub('[^a-zA-Z]',\" \",data['Review'][i])\n",
+        "    s=s.lower()\n",
+        "    s=s.split()\n",
+        "    s= [word  for word in s if word not in stopwords.words('english')]\n",
+        "    s=' '.join(s)\n",
+        "    s=stem.stem(s)\n",
+        "    corpus.append(s)\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 31,
+      "id": "d786be5d-3124-4218-9b32-24e01db76b4d",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "d786be5d-3124-4218-9b32-24e01db76b4d",
+        "outputId": "e59f53fb-10dc-4782-8999-b050d65b5762"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[0, 0, 0, ..., 0, 0, 0],\n",
+              "       [0, 0, 0, ..., 0, 0, 0],\n",
+              "       [0, 0, 0, ..., 0, 0, 0],\n",
+              "       ...,\n",
+              "       [0, 0, 0, ..., 0, 0, 0],\n",
+              "       [0, 0, 0, ..., 0, 0, 0],\n",
+              "       [0, 0, 0, ..., 0, 0, 0]])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 31
+        }
+      ],
+      "source": [
+        "cv.fit_transform(corpus).toarray()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 32,
+      "id": "ea1b5f7e-757e-4443-ae25-25da54e340f4",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ea1b5f7e-757e-4443-ae25-25da54e340f4",
+        "outputId": "5e25c39a-ea45-4380-9dab-d6e998384a61"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(1000, 1994)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 32
+        }
+      ],
+      "source": [
+        "cv.fit_transform(corpus).toarray().shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 33,
+      "id": "dea185e9-8d24-4642-8373-9dc6952fc3e0",
+      "metadata": {
+        "id": "dea185e9-8d24-4642-8373-9dc6952fc3e0"
+      },
+      "outputs": [],
+      "source": [
+        "X=cv.fit_transform(corpus).toarray()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 34,
+      "id": "39af3ef7-c82d-41b1-ab8c-5c1a19e3449d",
+      "metadata": {
+        "id": "39af3ef7-c82d-41b1-ab8c-5c1a19e3449d"
+      },
+      "outputs": [],
+      "source": [
+        "y=data['Liked']"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 35,
+      "id": "5ea449b2-991f-4439-a0b6-42ab9bd536b0",
+      "metadata": {
+        "id": "5ea449b2-991f-4439-a0b6-42ab9bd536b0"
+      },
+      "outputs": [],
+      "source": [
+        "from sklearn.model_selection import train_test_split"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 36,
+      "id": "72063657-2515-4638-80f3-cd6fb3826c55",
+      "metadata": {
+        "id": "72063657-2515-4638-80f3-cd6fb3826c55"
+      },
+      "outputs": [],
+      "source": [
+        "X_train,X_test,y_train,y_test= train_test_split(X,y,test_size=0.2,random_state=42)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 37,
+      "id": "934f14af-f6be-425a-936b-132c915c50fb",
+      "metadata": {
+        "id": "934f14af-f6be-425a-936b-132c915c50fb"
+      },
+      "outputs": [],
+      "source": [
+        "from sklearn.naive_bayes import MultinomialNB"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 38,
+      "id": "c00548b9-856a-423a-82c6-153d7c50bf10",
+      "metadata": {
+        "id": "c00548b9-856a-423a-82c6-153d7c50bf10"
+      },
+      "outputs": [],
+      "source": [
+        "model=MultinomialNB()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 39,
+      "id": "840e3d23-3175-4b17-9962-c20020c7f930",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 80
+        },
+        "id": "840e3d23-3175-4b17-9962-c20020c7f930",
+        "outputId": "d816e5b9-270d-4b39-dcc6-2227b724f38a"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "MultinomialNB()"
+            ],
+            "text/html": [
+              "<style>#sk-container-id-1 {\n",
+              "  /* Definition of color scheme common for light and dark mode */\n",
+              "  --sklearn-color-text: #000;\n",
+              "  --sklearn-color-text-muted: #666;\n",
+              "  --sklearn-color-line: gray;\n",
+              "  /* Definition of color scheme for unfitted estimators */\n",
+              "  --sklearn-color-unfitted-level-0: #fff5e6;\n",
+              "  --sklearn-color-unfitted-level-1: #f6e4d2;\n",
+              "  --sklearn-color-unfitted-level-2: #ffe0b3;\n",
+              "  --sklearn-color-unfitted-level-3: chocolate;\n",
+              "  /* Definition of color scheme for fitted estimators */\n",
+              "  --sklearn-color-fitted-level-0: #f0f8ff;\n",
+              "  --sklearn-color-fitted-level-1: #d4ebff;\n",
+              "  --sklearn-color-fitted-level-2: #b3dbfd;\n",
+              "  --sklearn-color-fitted-level-3: cornflowerblue;\n",
+              "\n",
+              "  /* Specific color for light theme */\n",
+              "  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));\n",
+              "  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));\n",
+              "  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));\n",
+              "  --sklearn-color-icon: #696969;\n",
+              "\n",
+              "  @media (prefers-color-scheme: dark) {\n",
+              "    /* Redefinition of color scheme for dark theme */\n",
+              "    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));\n",
+              "    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));\n",
+              "    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));\n",
+              "    --sklearn-color-icon: #878787;\n",
+              "  }\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 {\n",
+              "  color: var(--sklearn-color-text);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 pre {\n",
+              "  padding: 0;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 input.sk-hidden--visually {\n",
+              "  border: 0;\n",
+              "  clip: rect(1px 1px 1px 1px);\n",
+              "  clip: rect(1px, 1px, 1px, 1px);\n",
+              "  height: 1px;\n",
+              "  margin: -1px;\n",
+              "  overflow: hidden;\n",
+              "  padding: 0;\n",
+              "  position: absolute;\n",
+              "  width: 1px;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-dashed-wrapped {\n",
+              "  border: 1px dashed var(--sklearn-color-line);\n",
+              "  margin: 0 0.4em 0.5em 0.4em;\n",
+              "  box-sizing: border-box;\n",
+              "  padding-bottom: 0.4em;\n",
+              "  background-color: var(--sklearn-color-background);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-container {\n",
+              "  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`\n",
+              "     but bootstrap.min.css set `[hidden] { display: none !important; }`\n",
+              "     so we also need the `!important` here to be able to override the\n",
+              "     default hidden behavior on the sphinx rendered scikit-learn.org.\n",
+              "     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */\n",
+              "  display: inline-block !important;\n",
+              "  position: relative;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-text-repr-fallback {\n",
+              "  display: none;\n",
+              "}\n",
+              "\n",
+              "div.sk-parallel-item,\n",
+              "div.sk-serial,\n",
+              "div.sk-item {\n",
+              "  /* draw centered vertical line to link estimators */\n",
+              "  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));\n",
+              "  background-size: 2px 100%;\n",
+              "  background-repeat: no-repeat;\n",
+              "  background-position: center center;\n",
+              "}\n",
+              "\n",
+              "/* Parallel-specific style estimator block */\n",
+              "\n",
+              "#sk-container-id-1 div.sk-parallel-item::after {\n",
+              "  content: \"\";\n",
+              "  width: 100%;\n",
+              "  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);\n",
+              "  flex-grow: 1;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-parallel {\n",
+              "  display: flex;\n",
+              "  align-items: stretch;\n",
+              "  justify-content: center;\n",
+              "  background-color: var(--sklearn-color-background);\n",
+              "  position: relative;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-parallel-item {\n",
+              "  display: flex;\n",
+              "  flex-direction: column;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-parallel-item:first-child::after {\n",
+              "  align-self: flex-end;\n",
+              "  width: 50%;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-parallel-item:last-child::after {\n",
+              "  align-self: flex-start;\n",
+              "  width: 50%;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-parallel-item:only-child::after {\n",
+              "  width: 0;\n",
+              "}\n",
+              "\n",
+              "/* Serial-specific style estimator block */\n",
+              "\n",
+              "#sk-container-id-1 div.sk-serial {\n",
+              "  display: flex;\n",
+              "  flex-direction: column;\n",
+              "  align-items: center;\n",
+              "  background-color: var(--sklearn-color-background);\n",
+              "  padding-right: 1em;\n",
+              "  padding-left: 1em;\n",
+              "}\n",
+              "\n",
+              "\n",
+              "/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is\n",
+              "clickable and can be expanded/collapsed.\n",
+              "- Pipeline and ColumnTransformer use this feature and define the default style\n",
+              "- Estimators will overwrite some part of the style using the `sk-estimator` class\n",
+              "*/\n",
+              "\n",
+              "/* Pipeline and ColumnTransformer style (default) */\n",
+              "\n",
+              "#sk-container-id-1 div.sk-toggleable {\n",
+              "  /* Default theme specific background. It is overwritten whether we have a\n",
+              "  specific estimator or a Pipeline/ColumnTransformer */\n",
+              "  background-color: var(--sklearn-color-background);\n",
+              "}\n",
+              "\n",
+              "/* Toggleable label */\n",
+              "#sk-container-id-1 label.sk-toggleable__label {\n",
+              "  cursor: pointer;\n",
+              "  display: flex;\n",
+              "  width: 100%;\n",
+              "  margin-bottom: 0;\n",
+              "  padding: 0.5em;\n",
+              "  box-sizing: border-box;\n",
+              "  text-align: center;\n",
+              "  align-items: start;\n",
+              "  justify-content: space-between;\n",
+              "  gap: 0.5em;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 label.sk-toggleable__label .caption {\n",
+              "  font-size: 0.6rem;\n",
+              "  font-weight: lighter;\n",
+              "  color: var(--sklearn-color-text-muted);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 label.sk-toggleable__label-arrow:before {\n",
+              "  /* Arrow on the left of the label */\n",
+              "  content: \"▸\";\n",
+              "  float: left;\n",
+              "  margin-right: 0.25em;\n",
+              "  color: var(--sklearn-color-icon);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {\n",
+              "  color: var(--sklearn-color-text);\n",
+              "}\n",
+              "\n",
+              "/* Toggleable content - dropdown */\n",
+              "\n",
+              "#sk-container-id-1 div.sk-toggleable__content {\n",
+              "  max-height: 0;\n",
+              "  max-width: 0;\n",
+              "  overflow: hidden;\n",
+              "  text-align: left;\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-0);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-toggleable__content.fitted {\n",
+              "  /* fitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-0);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-toggleable__content pre {\n",
+              "  margin: 0.2em;\n",
+              "  border-radius: 0.25em;\n",
+              "  color: var(--sklearn-color-text);\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-0);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-toggleable__content.fitted pre {\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-0);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {\n",
+              "  /* Expand drop-down */\n",
+              "  max-height: 200px;\n",
+              "  max-width: 100%;\n",
+              "  overflow: auto;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {\n",
+              "  content: \"▾\";\n",
+              "}\n",
+              "\n",
+              "/* Pipeline/ColumnTransformer-specific style */\n",
+              "\n",
+              "#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {\n",
+              "  color: var(--sklearn-color-text);\n",
+              "  background-color: var(--sklearn-color-unfitted-level-2);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {\n",
+              "  background-color: var(--sklearn-color-fitted-level-2);\n",
+              "}\n",
+              "\n",
+              "/* Estimator-specific style */\n",
+              "\n",
+              "/* Colorize estimator box */\n",
+              "#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-2);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {\n",
+              "  /* fitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-2);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-label label.sk-toggleable__label,\n",
+              "#sk-container-id-1 div.sk-label label {\n",
+              "  /* The background is the default theme color */\n",
+              "  color: var(--sklearn-color-text-on-default-background);\n",
+              "}\n",
+              "\n",
+              "/* On hover, darken the color of the background */\n",
+              "#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {\n",
+              "  color: var(--sklearn-color-text);\n",
+              "  background-color: var(--sklearn-color-unfitted-level-2);\n",
+              "}\n",
+              "\n",
+              "/* Label box, darken color on hover, fitted */\n",
+              "#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {\n",
+              "  color: var(--sklearn-color-text);\n",
+              "  background-color: var(--sklearn-color-fitted-level-2);\n",
+              "}\n",
+              "\n",
+              "/* Estimator label */\n",
+              "\n",
+              "#sk-container-id-1 div.sk-label label {\n",
+              "  font-family: monospace;\n",
+              "  font-weight: bold;\n",
+              "  display: inline-block;\n",
+              "  line-height: 1.2em;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-label-container {\n",
+              "  text-align: center;\n",
+              "}\n",
+              "\n",
+              "/* Estimator-specific */\n",
+              "#sk-container-id-1 div.sk-estimator {\n",
+              "  font-family: monospace;\n",
+              "  border: 1px dotted var(--sklearn-color-border-box);\n",
+              "  border-radius: 0.25em;\n",
+              "  box-sizing: border-box;\n",
+              "  margin-bottom: 0.5em;\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-0);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-estimator.fitted {\n",
+              "  /* fitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-0);\n",
+              "}\n",
+              "\n",
+              "/* on hover */\n",
+              "#sk-container-id-1 div.sk-estimator:hover {\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-2);\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 div.sk-estimator.fitted:hover {\n",
+              "  /* fitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-2);\n",
+              "}\n",
+              "\n",
+              "/* Specification for estimator info (e.g. \"i\" and \"?\") */\n",
+              "\n",
+              "/* Common style for \"i\" and \"?\" */\n",
+              "\n",
+              ".sk-estimator-doc-link,\n",
+              "a:link.sk-estimator-doc-link,\n",
+              "a:visited.sk-estimator-doc-link {\n",
+              "  float: right;\n",
+              "  font-size: smaller;\n",
+              "  line-height: 1em;\n",
+              "  font-family: monospace;\n",
+              "  background-color: var(--sklearn-color-background);\n",
+              "  border-radius: 1em;\n",
+              "  height: 1em;\n",
+              "  width: 1em;\n",
+              "  text-decoration: none !important;\n",
+              "  margin-left: 0.5em;\n",
+              "  text-align: center;\n",
+              "  /* unfitted */\n",
+              "  border: var(--sklearn-color-unfitted-level-1) 1pt solid;\n",
+              "  color: var(--sklearn-color-unfitted-level-1);\n",
+              "}\n",
+              "\n",
+              ".sk-estimator-doc-link.fitted,\n",
+              "a:link.sk-estimator-doc-link.fitted,\n",
+              "a:visited.sk-estimator-doc-link.fitted {\n",
+              "  /* fitted */\n",
+              "  border: var(--sklearn-color-fitted-level-1) 1pt solid;\n",
+              "  color: var(--sklearn-color-fitted-level-1);\n",
+              "}\n",
+              "\n",
+              "/* On hover */\n",
+              "div.sk-estimator:hover .sk-estimator-doc-link:hover,\n",
+              ".sk-estimator-doc-link:hover,\n",
+              "div.sk-label-container:hover .sk-estimator-doc-link:hover,\n",
+              ".sk-estimator-doc-link:hover {\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-3);\n",
+              "  color: var(--sklearn-color-background);\n",
+              "  text-decoration: none;\n",
+              "}\n",
+              "\n",
+              "div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,\n",
+              ".sk-estimator-doc-link.fitted:hover,\n",
+              "div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,\n",
+              ".sk-estimator-doc-link.fitted:hover {\n",
+              "  /* fitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-3);\n",
+              "  color: var(--sklearn-color-background);\n",
+              "  text-decoration: none;\n",
+              "}\n",
+              "\n",
+              "/* Span, style for the box shown on hovering the info icon */\n",
+              ".sk-estimator-doc-link span {\n",
+              "  display: none;\n",
+              "  z-index: 9999;\n",
+              "  position: relative;\n",
+              "  font-weight: normal;\n",
+              "  right: .2ex;\n",
+              "  padding: .5ex;\n",
+              "  margin: .5ex;\n",
+              "  width: min-content;\n",
+              "  min-width: 20ex;\n",
+              "  max-width: 50ex;\n",
+              "  color: var(--sklearn-color-text);\n",
+              "  box-shadow: 2pt 2pt 4pt #999;\n",
+              "  /* unfitted */\n",
+              "  background: var(--sklearn-color-unfitted-level-0);\n",
+              "  border: .5pt solid var(--sklearn-color-unfitted-level-3);\n",
+              "}\n",
+              "\n",
+              ".sk-estimator-doc-link.fitted span {\n",
+              "  /* fitted */\n",
+              "  background: var(--sklearn-color-fitted-level-0);\n",
+              "  border: var(--sklearn-color-fitted-level-3);\n",
+              "}\n",
+              "\n",
+              ".sk-estimator-doc-link:hover span {\n",
+              "  display: block;\n",
+              "}\n",
+              "\n",
+              "/* \"?\"-specific style due to the `<a>` HTML tag */\n",
+              "\n",
+              "#sk-container-id-1 a.estimator_doc_link {\n",
+              "  float: right;\n",
+              "  font-size: 1rem;\n",
+              "  line-height: 1em;\n",
+              "  font-family: monospace;\n",
+              "  background-color: var(--sklearn-color-background);\n",
+              "  border-radius: 1rem;\n",
+              "  height: 1rem;\n",
+              "  width: 1rem;\n",
+              "  text-decoration: none;\n",
+              "  /* unfitted */\n",
+              "  color: var(--sklearn-color-unfitted-level-1);\n",
+              "  border: var(--sklearn-color-unfitted-level-1) 1pt solid;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 a.estimator_doc_link.fitted {\n",
+              "  /* fitted */\n",
+              "  border: var(--sklearn-color-fitted-level-1) 1pt solid;\n",
+              "  color: var(--sklearn-color-fitted-level-1);\n",
+              "}\n",
+              "\n",
+              "/* On hover */\n",
+              "#sk-container-id-1 a.estimator_doc_link:hover {\n",
+              "  /* unfitted */\n",
+              "  background-color: var(--sklearn-color-unfitted-level-3);\n",
+              "  color: var(--sklearn-color-background);\n",
+              "  text-decoration: none;\n",
+              "}\n",
+              "\n",
+              "#sk-container-id-1 a.estimator_doc_link.fitted:hover {\n",
+              "  /* fitted */\n",
+              "  background-color: var(--sklearn-color-fitted-level-3);\n",
+              "}\n",
+              "</style><div id=\"sk-container-id-1\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>MultinomialNB()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item\"><div class=\"sk-estimator fitted sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-1\" type=\"checkbox\" checked><label for=\"sk-estimator-id-1\" class=\"sk-toggleable__label fitted sk-toggleable__label-arrow\"><div><div>MultinomialNB</div></div><div><a class=\"sk-estimator-doc-link fitted\" rel=\"noreferrer\" target=\"_blank\" href=\"https://scikit-learn.org/1.6/modules/generated/sklearn.naive_bayes.MultinomialNB.html\">?<span>Documentation for MultinomialNB</span></a><span class=\"sk-estimator-doc-link fitted\">i<span>Fitted</span></span></div></label><div class=\"sk-toggleable__content fitted\"><pre>MultinomialNB()</pre></div> </div></div></div></div>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 39
+        }
+      ],
+      "source": [
+        "model.fit(X_train,y_train)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 40,
+      "id": "86f15640-882b-432d-9dad-aa8016bc3207",
+      "metadata": {
+        "id": "86f15640-882b-432d-9dad-aa8016bc3207"
+      },
+      "outputs": [],
+      "source": [
+        "y_pred=model.predict(X_test)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 41,
+      "id": "5136491e-c4dc-4983-9d20-163884dad6c2",
+      "metadata": {
+        "id": "5136491e-c4dc-4983-9d20-163884dad6c2"
+      },
+      "outputs": [],
+      "source": [
+        "\n",
+        "from sklearn.metrics import confusion_matrix,accuracy_score,classification_report"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 42,
+      "id": "14fd31a9-5134-4ab7-b41d-fd2e3635b430",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "14fd31a9-5134-4ab7-b41d-fd2e3635b430",
+        "outputId": "e0884c07-4743-4e1a-b916-92b25490fad6"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[71 25]\n",
+            " [24 80]]\n"
+          ]
+        }
+      ],
+      "source": [
+        "print(confusion_matrix(y_test,y_pred))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 43,
+      "id": "d7e3dd7c-b2c7-4226-bc6a-52af5f7d50c5",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "d7e3dd7c-b2c7-4226-bc6a-52af5f7d50c5",
+        "outputId": "f1688abc-1386-4dd2-c347-36e8f29f11ef"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "0.755\n"
+          ]
+        }
+      ],
+      "source": [
+        "print(accuracy_score(y_test,y_pred))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 44,
+      "id": "ac2d79e3-075f-4e3c-b0ce-8382b66d8d11",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ac2d79e3-075f-4e3c-b0ce-8382b66d8d11",
+        "outputId": "9d171cd4-ed47-4fe9-d5ea-b164b907fce3"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.75      0.74      0.74        96\n",
+            "           1       0.76      0.77      0.77       104\n",
+            "\n",
+            "    accuracy                           0.76       200\n",
+            "   macro avg       0.75      0.75      0.75       200\n",
+            "weighted avg       0.75      0.76      0.75       200\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "print(classification_report(y_test,y_pred))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 45,
+      "id": "9ad47298-0075-4ce0-8119-9ac706c52110",
+      "metadata": {
+        "id": "9ad47298-0075-4ce0-8119-9ac706c52110"
+      },
+      "outputs": [],
+      "source": [
+        "import tensorflow as tf\n",
+        "from tensorflow.keras.models import Sequential\n",
+        "from tensorflow.keras.layers import Dense, Dropout\n",
+        "\n",
+        "X_train_nn = X_train.astype('float32')\n",
+        "X_test_nn = X_test.astype('float32')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 52,
+      "id": "9ec57e96-11f6-40a9-b8a0-a590c782dbd5",
+      "metadata": {
+        "id": "9ec57e96-11f6-40a9-b8a0-a590c782dbd5"
+      },
+      "outputs": [],
+      "source": [
+        "model = Sequential([\n",
+        "\n",
+        "    Dense(128, activation='relu', input_dim=X_train.shape[1]),\n",
+        "\n",
+        "    Dense(64, activation='relu'),\n",
+        "\n",
+        "    Dense(1, activation='sigmoid')\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 53,
+      "id": "ed34cee9-0414-4775-bd14-9b8588a31b1b",
+      "metadata": {
+        "id": "ed34cee9-0414-4775-bd14-9b8588a31b1b"
+      },
+      "outputs": [],
+      "source": [
+        "model.compile(optimizer='adam',\n",
+        "              loss='binary_crossentropy',\n",
+        "              metrics=['accuracy'])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 53,
+      "id": "bf3c5d16-341f-4c37-85ee-483fae3b2793",
+      "metadata": {
+        "id": "bf3c5d16-341f-4c37-85ee-483fae3b2793"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 54,
+      "id": "8c5acc31-7151-4462-93be-5b22f23ff411",
+      "metadata": {
+        "id": "8c5acc31-7151-4462-93be-5b22f23ff411"
+      },
+      "outputs": [],
+      "source": [
+        "model.compile(optimizer='adam',\n",
+        "              loss='binary_crossentropy',\n",
+        "              metrics=['accuracy'])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 55,
+      "id": "7afbbc1d-ecae-4935-a8c5-4e210e71cde7",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "7afbbc1d-ecae-4935-a8c5-4e210e71cde7",
+        "outputId": "2d95b59c-9901-4e87-dc0a-0c06e780fce1"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m7/7\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m1s\u001b[0m 32ms/step - accuracy: 0.5050 - loss: 0.6910\n",
+            "Deep Learning Accuracy: 50.50%\n"
+          ]
+        }
+      ],
+      "source": [
+        "loss, accuracy = model.evaluate(X_test_nn, y_test)\n",
+        "print(f\"Deep Learning Accuracy: {accuracy * 100:.2f}%\")\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 49,
+      "id": "975e54f7-cd0d-4008-b6fc-125b5d00b373",
+      "metadata": {
+        "id": "975e54f7-cd0d-4008-b6fc-125b5d00b373"
+      },
+      "outputs": [],
+      "source": [
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 49,
+      "id": "7e0d8d06-d30b-43db-926f-3a7479ef6350",
+      "metadata": {
+        "id": "7e0d8d06-d30b-43db-926f-3a7479ef6350"
+      },
+      "outputs": [],
+      "source": [
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 50,
+      "id": "3b46eae3-c3bb-475b-a7b9-fd34c3850e97",
+      "metadata": {
+        "id": "3b46eae3-c3bb-475b-a7b9-fd34c3850e97"
+      },
+      "outputs": [],
+      "source": [
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 50,
+      "id": "f00dab29-35ab-4cb4-ac5b-853f731e5886",
+      "metadata": {
+        "id": "f00dab29-35ab-4cb4-ac5b-853f731e5886"
+      },
+      "outputs": [],
+      "source": [
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 50,
+      "id": "355ef8a0-2d20-4005-8372-d83695c0f7ba",
+      "metadata": {
+        "id": "355ef8a0-2d20-4005-8372-d83695c0f7ba"
+      },
+      "outputs": [],
+      "source": [
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "50cd6c1f-7bdf-4550-b13e-5a560eb7dbc5",
+      "metadata": {
+        "id": "50cd6c1f-7bdf-4550-b13e-5a560eb7dbc5"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "6eb8ee0f-5fad-4bf1-8f37-9db11eb2dbf6",
+      "metadata": {
+        "id": "6eb8ee0f-5fad-4bf1-8f37-9db11eb2dbf6"
+      },
+      "outputs": [],
+      "source": [
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 50,
+      "id": "c0b6a5d6-9d44-4fa5-aaa0-c899d162d656",
+      "metadata": {
+        "id": "c0b6a5d6-9d44-4fa5-aaa0-c899d162d656"
+      },
+      "outputs": [],
+      "source": [
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "a8dc712c-2854-4ae9-9c74-0ed8da923f42",
+      "metadata": {
+        "id": "a8dc712c-2854-4ae9-9c74-0ed8da923f42"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "61d7849c-6dde-434f-bf1d-6bcf46f60543",
+      "metadata": {
+        "id": "61d7849c-6dde-434f-bf1d-6bcf46f60543"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "d27ce133-b260-4237-9b6a-cd6518c0897d",
+      "metadata": {
+        "id": "d27ce133-b260-4237-9b6a-cd6518c0897d"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "023f088d-a818-4736-9bc4-5b8a4cfe5d04",
+      "metadata": {
+        "id": "023f088d-a818-4736-9bc4-5b8a4cfe5d04"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "4ca2ea35-a13d-4bd7-a3ac-e26c81bca6c6",
+      "metadata": {
+        "id": "4ca2ea35-a13d-4bd7-a3ac-e26c81bca6c6"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "915ed224-6b73-48ab-b176-935197cca1da",
+      "metadata": {
+        "id": "915ed224-6b73-48ab-b176-935197cca1da"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "73af2382-b3c4-4274-8439-f83367376fa2",
+      "metadata": {
+        "id": "73af2382-b3c4-4274-8439-f83367376fa2"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "ebb85039-e17b-44d8-b083-bb1e2e2cb3ba",
+      "metadata": {
+        "id": "ebb85039-e17b-44d8-b083-bb1e2e2cb3ba"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "5eead355-e3e7-42ee-b5ca-79d0c810a7cd",
+      "metadata": {
+        "id": "5eead355-e3e7-42ee-b5ca-79d0c810a7cd"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "efcc42b2-d555-4df9-b5c5-0b2f4d39a872",
+      "metadata": {
+        "id": "efcc42b2-d555-4df9-b5c5-0b2f4d39a872"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "b26fe425-6ea0-40e3-8926-5c6200ba64e5",
+      "metadata": {
+        "id": "b26fe425-6ea0-40e3-8926-5c6200ba64e5"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "a4fa0322-fdfc-437c-b3e4-b4c4c32615a0",
+      "metadata": {
+        "id": "a4fa0322-fdfc-437c-b3e4-b4c4c32615a0"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "e9e86eaa-9fe9-4458-ac3d-828953eed8db",
+      "metadata": {
+        "id": "e9e86eaa-9fe9-4458-ac3d-828953eed8db"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "bc07c697-c870-4ec8-9fb0-0c136a462a7c",
+      "metadata": {
+        "id": "bc07c697-c870-4ec8-9fb0-0c136a462a7c"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "015dd111-b6ea-400e-9539-49c105ce65a0",
+      "metadata": {
+        "id": "015dd111-b6ea-400e-9539-49c105ce65a0"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "df5ae740-03f2-4a84-bef0-c53d0e81b9a4",
+      "metadata": {
+        "id": "df5ae740-03f2-4a84-bef0-c53d0e81b9a4"
+      },
+      "outputs": [],
+      "source": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.13.5"
+    },
+    "colab": {
+      "provenance": [],
+      "gpuType": "T4",
+      "include_colab_link": true
+    },
+    "accelerator": "GPU"
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
